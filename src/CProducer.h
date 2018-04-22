@@ -1,21 +1,24 @@
 #ifndef SRC_CPRODUCER_H_
 #define SRC_CPRODUCER_H_
 
-#include "CBufor.h"
+#include <thread>
+#include "CSynchConsoleOut.h"
+#include "CBuffer.h"
 
 class CProducer
 {
 public:
-	CProducer(CBufor const & cBufor);
+	CProducer(int iNumber, CBuffer & cBuffer);
 
-	void vProduce();
+	void vProduce(int iProducingTime, int iRepetitions);
 
 private:
 
-	CBufor * const c_bufor;
+	int i_number;
+
+	CBuffer * const c_buffer;
 
 };
-
 
 
 #endif /* SRC_CPRODUCER_H_ */

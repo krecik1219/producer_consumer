@@ -1,18 +1,21 @@
 #ifndef SRC_CCONSUMER_H_
 #define SRC_CCONSUMER_H_
 
-#include "CBufor.h"
+#include <thread>
+#include "CSynchConsoleOut.h"
+#include "CBuffer.h"
 
 class CConsumer
 {
 public:
-	CConsumer(CBufor const & cBufor);
+	CConsumer(int iNumber, CBuffer & cBuffer);
 
-	void vConsume();
+	void vConsume(int iConsumeInterval, int iRepetitions, int iElementsPerConsume);
 
 private:
 
-	CBufor * const c_bufor;
+	int i_number;
+	CBuffer * const c_buffer;
 };
 
 
