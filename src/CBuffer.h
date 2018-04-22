@@ -4,7 +4,7 @@
 #include <mutex>
 #include <condition_variable>
 
-// cyclic bufor implementation
+// cyclic buffer implementation
 class CBuffer
 {
 public:
@@ -13,7 +13,8 @@ public:
 	~CBuffer();
 
 	void vPut(int iElem);
-	int iTake(int iQuantity);
+	void vTake(int iQuantity);
+	int iCurrentCount();
 
 private:
 

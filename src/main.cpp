@@ -24,15 +24,15 @@ int main()
 	typedef unique_ptr<std::thread> thr;
 	vector<thr> producersThr;
 	producersThr.push_back(std::make_unique<std::thread>(&CProducer::vProduce, *producers[0], 3000, 10));
-	producersThr.push_back(std::make_unique<std::thread>(&CProducer::vProduce, *producers[1], 3000, 10));
-	producersThr.push_back(std::make_unique<std::thread>(&CProducer::vProduce, *producers[2], 3000, 10));
-	producersThr.push_back(std::make_unique<std::thread>(&CProducer::vProduce, *producers[3], 3000, 10));
+	producersThr.push_back(std::make_unique<std::thread>(&CProducer::vProduce, *producers[1], 2000, 10));
+	producersThr.push_back(std::make_unique<std::thread>(&CProducer::vProduce, *producers[2], 1500, 30));
+	producersThr.push_back(std::make_unique<std::thread>(&CProducer::vProduce, *producers[3], 3000, 20));
 
 	vector<thr> consumersThr;
 	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[0], 2000, 10, 1));
-	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[1], 1500, 10, 1));
+	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[1], 1500, 10, 2));
 	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[2], 3000, 10, 1));
-	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[3], 3500, 10, 1));
+	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[3], 3500, 10, 3));
 
 	for(int i=0; i<4; i++)
 	{

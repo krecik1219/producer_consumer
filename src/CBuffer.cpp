@@ -27,22 +27,26 @@ void CBuffer::vPut(int iElem)
 
 }
 
-int CBuffer::iTake(int iQuantity)
+void CBuffer::vTake(int iQuantity)
 {
-	std::unique_lock<std::mutex> lock (c_locker);
+	if(iQuantity <= i_buffer_size)
+	{
+		std::unique_lock<std::mutex> lock (c_locker);
 
-	c_consumer_empty.wait(lock, [this, iQuantity]()->bool{return i_count >= iQuantity;});
+			c_consumer_empty.wait(lock, [this, iQuantity]()->bool{return i_count >= iQuantity;});
 
-	int i_taken = pi_buffer_base[i_output_position];
-	i_output_position = (i_output_position + 1) % i_buffer_size;
-	--i_count;
+			i_output_position = (i_output_position + iQuantity) % i_buffer_size;
+			i_count-=iQuantity;
 
-	lock.unlock();
+			lock.unlock();
 
-	c_producer_full.notify_one();
+			c_producer_full.notify_one();
+	}
+}
 
-
-	return i_taken;
+int CBuffer::iCurrentCount()
+{
+	return i_count;
 }
 
 
