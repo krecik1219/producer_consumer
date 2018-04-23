@@ -1,12 +1,27 @@
 #include "CProducer.h"
 
 CProducer::CProducer(int iNumber, CBuffer & cBuffer) :
-i_number(iNumber), c_buffer(&cBuffer)
+i_number(iNumber), c_buffer(&cBuffer), b_is_producing(false)
 {
 
 }
 
+CProducer::~CProducer()
+{
+	if(c_producer_thread.joinable())
+		c_producer_thread.join();
+}
+
 void CProducer::vProduce(int iProducingTime, int iRepetitions)
+{
+	if(!b_is_producing)
+	{
+		b_is_producing = true;
+		c_producer_thread = std::thread(&CProducer::v_aux_produce, this, iProducingTime, iRepetitions);
+	}
+}
+
+void CProducer::v_aux_produce(int iProducingTime, int iRepetitions)
 {
 	CSynchConsoleOut & out = CSynchConsoleOut::pcGetInstance();
 	for(int i = 0; i < iRepetitions; ++i)
@@ -20,5 +35,10 @@ void CProducer::vProduce(int iProducingTime, int iRepetitions)
 	out<<"Producer "+std::to_string(i_number)+" finished its job ";
 }
 
+void CProducer::vExplicitJoin()
+{
+	if(c_producer_thread.joinable())
+		c_producer_thread.join();
+}
 
 

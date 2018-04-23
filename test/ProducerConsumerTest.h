@@ -53,11 +53,10 @@ TEST(ProducerConsumerTest, producing_some_quantity_of_elems_then_consuming_the_s
 	CBuffer buffer(5);
 	CProducer producer(1, buffer);
 	CConsumer consumer(1, buffer);
-	std::thread prod(&CProducer::vProduce, producer, 500, 20);
-	std::thread cons(&CConsumer::vConsume, consumer, 250, 20, 1);
-
-	prod.join();
-	cons.join();
+	producer.vProduce(500, 20);
+	consumer.vConsume(250, 20, 1);
+	producer.vExplicitJoin();
+	consumer.vExplicitJoin();
 	ASSERT_EQ(0, buffer.iCurrentCount());
 }
 
@@ -66,11 +65,11 @@ TEST(ProducerConsumerTest, more_producing_cycles_consumer_consuming_multi_elems)
 	CBuffer buffer(5);
 	CProducer producer(1, buffer);
 	CConsumer consumer(1, buffer);
-	std::thread prod(&CProducer::vProduce, producer, 500, 20);
-	std::thread cons(&CConsumer::vConsume, consumer, 250, 10, 2);
+	producer.vProduce(500, 20);
+	consumer.vConsume(250, 10, 2);
 
-	prod.join();
-	cons.join();
+	producer.vExplicitJoin();
+	consumer.vExplicitJoin();
 	ASSERT_EQ(0, buffer.iCurrentCount());
 }
 
@@ -81,15 +80,15 @@ TEST(ProducerConsumerTest, single_producer_many_consumers)
 	CConsumer consumer1(1, buffer);
 	CConsumer consumer2(2, buffer);
 	CConsumer consumer3(3, buffer);
-	std::thread prod(&CProducer::vProduce, producer, 500, 70);
-	std::thread cons1(&CConsumer::vConsume, consumer1, 350, 10, 3);
-	std::thread cons2(&CConsumer::vConsume, consumer2, 250, 10, 2);
-	std::thread cons3(&CConsumer::vConsume, consumer3, 500, 20, 1);
+	producer.vProduce(500, 70);
+	consumer1.vConsume(350, 10, 3);
+	consumer2.vConsume(250, 10, 2);
+	consumer3.vConsume(500, 20, 1);
 
-	prod.join();
-	cons1.join();
-	cons2.join();
-	cons3.join();
+	producer.vExplicitJoin();
+	consumer1.vExplicitJoin();
+	consumer2.vExplicitJoin();
+	consumer3.vExplicitJoin();
 	ASSERT_EQ(0, buffer.iCurrentCount());
 }
 
@@ -100,15 +99,15 @@ TEST(ProducerConsumerTest, many_producers_single_consumer)
 	CProducer producer2(2, buffer);
 	CProducer producer3(3, buffer);
 	CConsumer consumer(1, buffer);
-	std::thread prod1(&CProducer::vProduce, producer1, 500, 20);
-	std::thread prod2(&CProducer::vProduce, producer2, 200, 10);
-	std::thread prod3(&CProducer::vProduce, producer3, 350, 10);
-	std::thread cons(&CConsumer::vConsume, consumer, 350, 20, 2);
+	producer1.vProduce(500, 20);
+	producer2.vProduce(200, 10);
+	producer3.vProduce(350, 10);
+	consumer.vConsume(350, 20, 2);
 
-	prod1.join();
-	prod2.join();
-	prod3.join();
-	cons.join();
+	producer1.vExplicitJoin();
+	producer2.vExplicitJoin();
+	producer3.vExplicitJoin();
+	consumer.vExplicitJoin();
 	ASSERT_EQ(0, buffer.iCurrentCount());
 }
 
@@ -122,87 +121,208 @@ TEST(ProducerConsumerTest, many_producers_many_consumers)
 	CConsumer consumer2(2, buffer);
 	CConsumer consumer3(3, buffer);
 	CConsumer consumer4(4, buffer);
-	std::thread prod1(&CProducer::vProduce, producer1, 400, 40);
-	std::thread prod2(&CProducer::vProduce, producer2, 200, 60);
-	std::thread prod3(&CProducer::vProduce, producer3, 350, 50);
-	std::thread cons1(&CConsumer::vConsume, consumer1, 350, 10, 2);
-	std::thread cons2(&CConsumer::vConsume, consumer2, 250, 20, 1);
-	std::thread cons3(&CConsumer::vConsume, consumer3, 500, 20, 3);
-	std::thread cons4(&CConsumer::vConsume, consumer4, 100, 10, 5);
+	producer1.vProduce(400, 40);
+	producer2.vProduce(200, 60);
+	producer3.vProduce(350, 50);
+	consumer1.vConsume(350, 10, 2);
+	consumer2.vConsume(250, 20, 1);
+	consumer3.vConsume(500, 20, 3);
+	consumer4.vConsume(100, 10, 5);
 
-	prod1.join(); prod2.join(); prod3.join();
-	cons1.join(); cons2.join(); cons3.join(); cons4.join();
+	producer1.vExplicitJoin();
+	producer2.vExplicitJoin();
+	producer3.vExplicitJoin();
+	consumer1.vExplicitJoin();
+	consumer2.vExplicitJoin();
+	consumer3.vExplicitJoin();
+	consumer4.vExplicitJoin();
+
 	ASSERT_EQ(0, buffer.iCurrentCount());
 }
 
-struct ProducerConsumerTest : testing::Test  // TODO
+struct ProdConsTest : testing::Test
 {
 	typedef std::unique_ptr<CProducer> producer;
 	typedef std::unique_ptr<CConsumer> consumer;
 
 	vector<producer> vProducers;
 	vector<consumer> vConsumers;
-	CBuffer buffer;
+	unique_ptr<CBuffer> buffer;
 
-	ProducerConsumerTest() :
-		buffer(5)
+
+	void vSetUp(int iBufferSize, int iProducentsNum, int iConsumersNum)
 	{
-
-	}
-
-	void setUp(int iProducentsNum, int iConsumersNum)
-	{
+		buffer = make_unique<CBuffer>(iBufferSize);
 		for(int i = 0; i<iProducentsNum; ++i)
 		{
-			vProducers.push_back(make_unique<CProducer>(i+1, buffer));
+			vProducers.push_back(make_unique<CProducer>(i+1, *buffer));
 		}
 
 		for(int i = 0; i<iConsumersNum; ++i)
 		{
-			vConsumers.push_back(make_unique<CConsumer>(i+1, buffer));
+			vConsumers.push_back(make_unique<CConsumer>(i+1, *buffer));
 		}
 	}
 
-	~ProducerConsumerTest()
+	void vExplicitJoinThreads()
 	{
+		int i_consumers_size = vConsumers.size();
+		int i_producers_size = vProducers.size();
 
+		for(int i=0; i< i_producers_size; ++i)
+		{
+			vProducers[i]->vExplicitJoin();
+		}
+
+		for(int i=0; i< i_consumers_size; ++i)
+		{
+			vConsumers[i]->vExplicitJoin();
+		}
+	}
+
+	void vStartProducers(vector<int> const & vProducingTimeValues, vector<int> const & vRepetitionsValues)
+	{
+		int i_producers_size = vProducers.size();
+
+		for (int i = 0; i < i_producers_size; ++i)
+		{
+			vProducers[i]->vProduce(vProducingTimeValues[i], vRepetitionsValues[i]);
+		}
+	}
+
+	void vStartConsumers(vector<int> const & vConsumingIntervalValues, vector<int> const & vRepetitionsValues, vector<int> const & vElementsPerConsumeValues)
+	{
+		int i_consumers_size = vConsumers.size();
+
+		for (int i = 0; i < i_consumers_size; ++i)
+		{
+			vConsumers[i]->vConsume(vConsumingIntervalValues[i], vRepetitionsValues[i], vElementsPerConsumeValues[i]);
+		}
+	}
+
+	~ProdConsTest()
+	{
+		vExplicitJoinThreads();
 	}
 
 };
 
-TEST(ProducerConsumerTest, many_producers_many_consumer_larger_scale_small_buffer)
+TEST_F(ProdConsTest, many_producers_many_consumer_larger_scale_large_buffer)
 {
-	// TODO implement that test, think about some data provider, repetitions and number of items consumed at once depends on total number of items that will be produced
-	auto buffer = make_shared<CBuffer>(5);
-	typedef std::unique_ptr<CProducer> producer;
-	typedef std::unique_ptr<CConsumer> consumer;
-	vector<producer> producers;
-	vector<consumer> consumers;
+	srand(time(NULL));
+	vector<int> vProducingTimeValues;
+	for(int i=0; i<100;i++)
+	{
+		vProducingTimeValues.push_back((rand() % 50 + 50));
+	}
+	vector<int> vConsumingIntervalValues;
 	for(int i=0; i<100; i++)
 	{
-		producers.push_back(make_unique<CProducer>(i+1, *buffer));
-		consumers.push_back(make_unique<CConsumer>(i+1, *buffer));
+		vConsumingIntervalValues.push_back((rand() % 50 + 50));
 	}
-
-	vector<int> producents_waiting_times;
-
-	typedef unique_ptr<std::thread> thr;
-	vector<thr> producersThr;
-	producersThr.push_back(make_unique<std::thread>(&CProducer::vProduce, *producers[0], 3000, 10));
-	producersThr.push_back(make_unique<std::thread>(&CProducer::vProduce, *producers[1], 2000, 10));
-	producersThr.push_back(make_unique<std::thread>(&CProducer::vProduce, *producers[2], 1500, 30));
-	producersThr.push_back(make_unique<std::thread>(&CProducer::vProduce, *producers[3], 3000, 20));
-	vector<thr> consumersThr;
-	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[0], 2000, 10, 1));
-	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[1], 1500, 10, 2));
-	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[2], 3000, 10, 1));
-	consumersThr.push_back(std::make_unique<std::thread>(&CConsumer::vConsume, *consumers[3], 3500, 10, 3));
-
-	for(int i=0; i<4; i++)
+	vector<int> vRepetitionsValuesProducers;
+	for(int i=0; i<100; i++)
 	{
-		producersThr[i]->join();
-		consumersThr[i]->join();
+		if(i<33)  // 33 values
+			vRepetitionsValuesProducers.push_back(10);
+		else if(i>=33 && i<66)  // 33 values
+			vRepetitionsValuesProducers.push_back(20);
+		else  // 34 values
+			vRepetitionsValuesProducers.push_back(30);
 	}
+	vector<int> vRepetitionsValuesConsumers;
+	vector<int> vElementsPerConsume;
+	for(int i=0; i<100; i++)
+	{
+		if (i < 33)  // 33 values
+		{
+			vRepetitionsValuesConsumers.push_back(10);
+			vElementsPerConsume.push_back(1);
+		}
+		else if(i>=33 && i<66)  // 33 values
+		{
+			vRepetitionsValuesConsumers.push_back(10);
+			vElementsPerConsume.push_back(2);
+		}
+		else  // 34 values
+		{
+			vRepetitionsValuesConsumers.push_back(6);
+			vElementsPerConsume.push_back(5);
+		}
+	}
+
+	vSetUp(1000, 100, 100);
+
+	buffer->vPut(1);
+	ASSERT_EQ(1, buffer->iCurrentCount());
+	buffer->vTake(1);
+	ASSERT_EQ(0, buffer->iCurrentCount());
+
+	vStartConsumers(vConsumingIntervalValues, vRepetitionsValuesConsumers, vElementsPerConsume);
+	vStartProducers(vProducingTimeValues, vRepetitionsValuesProducers);
+
+	vExplicitJoinThreads();
+
+	ASSERT_EQ(0, buffer->iCurrentCount());
+}
+
+TEST_F(ProdConsTest, many_producers_many_consumer_larger_scale_small_buffer)
+{
+	srand(time(NULL));
+	vector<int> vProducingTimeValues;
+	for(int i=0; i<100;i++)
+	{
+		vProducingTimeValues.push_back((rand() % 50 + 50));
+	}
+	vector<int> vConsumingIntervalValues;
+	for(int i=0; i<100; i++)
+	{
+		vConsumingIntervalValues.push_back((rand() % 50 + 50));
+	}
+	vector<int> vRepetitionsValuesProducers;
+	for(int i=0; i<100; i++)
+	{
+		if(i<33)  // 33 values
+			vRepetitionsValuesProducers.push_back(10);
+		else if(i>=33 && i<66)  // 33 values
+			vRepetitionsValuesProducers.push_back(20);
+		else  // 34 values
+			vRepetitionsValuesProducers.push_back(30);
+	}
+	vector<int> vRepetitionsValuesConsumers;
+	vector<int> vElementsPerConsume;
+	for(int i=0; i<100; i++)
+	{
+		if (i < 33)  // 33 values
+		{
+			vRepetitionsValuesConsumers.push_back(10);
+			vElementsPerConsume.push_back(1);
+		}
+		else if(i>=33 && i<66)  // 33 values
+		{
+			vRepetitionsValuesConsumers.push_back(10);
+			vElementsPerConsume.push_back(2);
+		}
+		else  // 34 values
+		{
+			vRepetitionsValuesConsumers.push_back(6);
+			vElementsPerConsume.push_back(5);
+		}
+	}
+
+	vSetUp(5, 100, 100);
+
+	buffer->vPut(1);
+	ASSERT_EQ(1, buffer->iCurrentCount());
+	buffer->vTake(1);
+	ASSERT_EQ(0, buffer->iCurrentCount());
+
+	vStartConsumers(vConsumingIntervalValues, vRepetitionsValuesConsumers, vElementsPerConsume);
+	vStartProducers(vProducingTimeValues, vRepetitionsValuesProducers);
+
+	vExplicitJoinThreads();
+
+	ASSERT_EQ(0, buffer->iCurrentCount());
 }
 
 
