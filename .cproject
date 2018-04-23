@@ -97,6 +97,22 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.669099841.19811912" name="/" resourcePath="test">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.2108061176" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug" unusedChildren="">
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1006538990" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.1686840338"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1788148158" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.333889345">
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.229177284" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.473582169" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1325890437">
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.89158121" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.621432488" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug.570504209"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.572298773" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1044256440"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1514039154" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug.816443328">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1492899653" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
 						<entry excluding="contrib|test" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
@@ -192,7 +208,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="test|src/main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="contrib|test|src/main.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="test"/>
 					</sourceEntries>
 				</configuration>

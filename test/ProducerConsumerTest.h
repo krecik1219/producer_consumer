@@ -135,6 +135,41 @@ TEST(ProducerConsumerTest, many_producers_many_consumers)
 	ASSERT_EQ(0, buffer.iCurrentCount());
 }
 
+struct ProducerConsumerTest : testing::Test  // TODO
+{
+	typedef std::unique_ptr<CProducer> producer;
+	typedef std::unique_ptr<CConsumer> consumer;
+
+	vector<producer> vProducers;
+	vector<consumer> vConsumers;
+	CBuffer buffer;
+
+	ProducerConsumerTest() :
+		buffer(5)
+	{
+
+	}
+
+	void setUp(int iProducentsNum, int iConsumersNum)
+	{
+		for(int i = 0; i<iProducentsNum; ++i)
+		{
+			vProducers.push_back(make_unique<CProducer>(i+1, buffer));
+		}
+
+		for(int i = 0; i<iConsumersNum; ++i)
+		{
+			vConsumers.push_back(make_unique<CConsumer>(i+1, buffer));
+		}
+	}
+
+	~ProducerConsumerTest()
+	{
+
+	}
+
+};
+
 TEST(ProducerConsumerTest, many_producers_many_consumer_larger_scale_small_buffer)
 {
 	// TODO implement that test, think about some data provider, repetitions and number of items consumed at once depends on total number of items that will be produced
