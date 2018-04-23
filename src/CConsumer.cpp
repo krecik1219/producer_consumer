@@ -1,7 +1,8 @@
 #include "CConsumer.h"
 
-CConsumer::CConsumer(int iNumber, CBuffer & cBuffer) :
-i_number(iNumber), c_buffer(&cBuffer), b_is_consuming(false)
+CConsumer::CConsumer(int iNumber, CBuffer * const cBuffer, int iConsumeInterval, int iRepetitions, int iElementsPerConsume) :
+i_number(iNumber), c_buffer(cBuffer), b_is_consuming(false), i_consume_interval(iConsumeInterval),
+i_repetitions(iRepetitions), i_elements_per_consume(iElementsPerConsume)
 {
 
 }
@@ -12,26 +13,26 @@ CConsumer::~CConsumer()
 		c_consumer_thread.join();
 }
 
-void CConsumer::vConsume(int iConsumeInterval, int iRepetitions, int iElementsPerConsume)
+void CConsumer::vConsume()
 {
 	if(!b_is_consuming)
 	{
 		b_is_consuming = true;
-		c_consumer_thread = std::thread(&CConsumer::v_aux_consume, this, iConsumeInterval, iRepetitions, iElementsPerConsume);
+		c_consumer_thread = std::thread(&CConsumer::v_aux_consume, this);
 	}
 }
 
-void CConsumer::v_aux_consume(int iConsumeInterval, int iRepetitions, int iElementsPerConsume)
+void CConsumer::v_aux_consume()
 {
 	CSynchConsoleOut& out = CSynchConsoleOut::pcGetInstance();
 
-		for(int i = 0; i < iRepetitions; ++i)
+		for(int i = 0; i < i_repetitions; ++i)
 		{
-			out<<("Consumer "+std::to_string(i_number)+" is sleeping for "+std::to_string(iConsumeInterval));
-			std::this_thread::sleep_for(std::chrono::milliseconds(iConsumeInterval));
-			out<<"Consumer "+std::to_string(i_number)+" is consuming "+std::to_string(iElementsPerConsume)+" elements";
-			c_buffer->vTake(iElementsPerConsume);
-			out<<"Consumer "+std::to_string(i_number)+" consumed "+std::to_string(iElementsPerConsume)+" elements";
+			out<<("Consumer "+std::to_string(i_number)+" is sleeping for "+std::to_string(i_consume_interval));
+			std::this_thread::sleep_for(std::chrono::milliseconds(i_consume_interval));
+			out<<"Consumer "+std::to_string(i_number)+" is consuming "+std::to_string(i_elements_per_consume)+" elements";
+			c_buffer->vTake(i_elements_per_consume);
+			out<<"Consumer "+std::to_string(i_number)+" consumed "+std::to_string(i_elements_per_consume)+" elements";
 		}
 		out<<"Consumer "+std::to_string(i_number)+" finished its job ";
 }

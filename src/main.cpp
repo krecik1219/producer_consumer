@@ -1,12 +1,9 @@
 #include <iostream>
-#include "CBuffer.h"
-#include "CProducer.h"
-#include "CConsumer.h"
-#include <vector>
-#include <memory>
+#include "CInterface.h"
 
 using namespace std;
 
+/*
 void vDummyRun()
 {
 	auto buffer = std::make_unique<CBuffer>(5);
@@ -31,14 +28,16 @@ void vDummyRun()
 	consumers[2]->vConsume(3000, 10, 1);
 	consumers[3]->vConsume(3500, 10, 3);
 }
+*/
+
+// TODO implement copy constructors and assignment operators in classes
 
 int main()
 {
 
-	vDummyRun();
+	CInterface c_interface;
+	c_interface.vRun();
 
-	cout<<endl<<"Program finished!"<<endl;
-	getchar(); getchar();
 	return 0;
 }
 
