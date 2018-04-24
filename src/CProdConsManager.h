@@ -14,6 +14,8 @@ class CProdConsManager
 {
 public:
 	CProdConsManager();
+	CProdConsManager(CProdConsManager const & cOther);  // copy construction is nonsense because of not copy-able member vars
+	CProdConsManager & operator=(CProdConsManager const & cOther);  // copy assignment is nonsense because of not copy-able member vars
 	~CProdConsManager();
 
 	bool bCreateBuffer(int iBufferSize);
@@ -41,6 +43,7 @@ enum class CProdConsError
 	ERR_OK = 0,
 	ERR_NO_CONSUMER = 1,
 	ERR_NO_PRODUCER = 2,
+	ERR_NO_BUFFER = 3,
 };
 
 #endif /* SRC_CPRODCONSMANAGER_H_ */

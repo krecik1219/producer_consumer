@@ -8,7 +8,6 @@ b_run_interface(false), b_input_correct(false), b_run_sub_interface(false)
 
 CInterface::~CInterface()
 {
-	// TODO Auto-generated destructor stub
 }
 
 void CInterface::vRun()
@@ -22,7 +21,6 @@ void CInterface::vRun()
 		v_get_user_input();
 		v_select_main_action();
 	}
-
 }
 
 void CInterface::v_get_user_input()
@@ -58,33 +56,33 @@ void CInterface::v_single_arg(string const & sSubStr)
 	}
 	else
 	{
-		ps_input_to_parse[0] = sEMPTY;
-		ps_input_to_parse[1] = sEMPTY;
+		ps_input_to_parse[0] = sEMPTY_CMD;
+		ps_input_to_parse[1] = sEMPTY_CMD;
 	}
 }
 
 void CInterface::v_select_main_action()
 {
 	v_single_arg(s_input);
-	if(ps_input_to_parse[0] == "init")
+	if(ps_input_to_parse[0] == sINIT_CMD)
 	{
 		v_run_init_submenu();
 		v_print_main_menu();
 	}
-	else if(ps_input_to_parse[0] == "test")
+	else if(ps_input_to_parse[0] == sTEST_CMD)
 	{
-		cout << "Sample test" << endl;
+		v_print_msg(sTEST_RUN_MSG);
 		v_run_test();
-		cout << endl << "Test finished" << endl;
+		v_print_msg(sTEST_FINISHED_MSG);
 		v_print_main_menu();
 	}
-	else if(ps_input_to_parse[0] == "exit")
+	else if(ps_input_to_parse[0] == sEXIT_CMD)
 	{
 		b_run_interface = false;
 	}
 	else
 	{
-		s_error_msg = "command not found";
+		s_error_msg = sCMD_NOT_FOUND_MSG;
 		v_print_err_msg();
 	}
 
@@ -122,7 +120,7 @@ void CInterface::v_print_sub_menu()
 void CInterface::v_select_sub_action()
 {
 	v_single_arg(s_input);
-	if(ps_input_to_parse[0] == "buffer")
+	if(ps_input_to_parse[0] == sBUFFER_CMD)
 	{
 		v_process_buffer_input(ps_input_to_parse[1]);
 		if(b_input_correct)
@@ -131,40 +129,63 @@ void CInterface::v_select_sub_action()
 			bool b_buffer_created = pc_manager->bCreateBuffer(i_buffer_size);
 			if(!b_buffer_created)
 			{
-				s_error_msg = "Buffer has been already created";
+				s_error_msg = sBUFFER_ALREADY_CREATED_ERR_MSG;
 				v_print_err_msg();
 			}
+			else
+				v_print_msg(sBUFFER_CREATED_MSG);
 		}
 		else
 			v_print_err_msg();
 	}
-	else if(ps_input_to_parse[0] == "producer")
+	else if(ps_input_to_parse[0] == sPRODUCER_CMD)
 	{
-		// TODO
+		v_process_producer_input(ps_input_to_parse[1]);
+		if(b_input_correct)
+		{
+			int i_producing_time = stoi(vs_command_set[0]);
+			int i_repetitions = stoi(vs_command_set[1]);
+			pc_manager->vCreateProducer(i_producing_time, i_repetitions);
+			v_print_msg(sPRODUCER_CREATED_MSG);
+		}
+		else
+			v_print_err_msg();
 	}
-	else if(ps_input_to_parse[0] == "consumer")
+	else if(ps_input_to_parse[0] == sCONSUMER_CMD)
 	{
-		// TODO
+		v_process_consumer_input(ps_input_to_parse[1]);
+		if(b_input_correct)
+		{
+			int i_consuming_time_interval = stoi(vs_command_set[0]);
+			int i_repetitions = stoi(vs_command_set[1]);
+			int i_elements_per_consume = stoi(vs_command_set[2]);
+			pc_manager->vCreateConsumer(i_consuming_time_interval, i_repetitions, i_elements_per_consume);
+			v_print_msg(sCONSUMER_CREATED_MSG);
+		}
+		else
+			v_print_err_msg();
 	}
-	else if(ps_input_to_parse[0] == "start")
+	else if(ps_input_to_parse[0] == sSTART_CMD)
 	{
-		// TODO
+		CProdConsError err_code = pc_manager->vStartTest();
+		v_match_err_code(err_code);
+		v_print_err_msg();
 	}
-	else if (ps_input_to_parse[0] == "quit")
+	else if (ps_input_to_parse[0] == sQUIT_CMD)
 	{
 		b_run_sub_interface = false;
 		pc_manager->vResetManager();
 	}
 	else
 	{
-		s_error_msg = "command not found";
+		s_error_msg = sCMD_NOT_FOUND_MSG;
 		v_print_err_msg();
 	}
 
 	vs_command_set.clear();
 }
 
-void CInterface::v_process_buffer_input(const string& sSubStr)
+void CInterface::v_process_buffer_input(string const & sSubStr)
 {
 	v_single_arg(sSubStr);
 	b_input_correct = true;
@@ -177,13 +198,93 @@ void CInterface::v_process_buffer_input(const string& sSubStr)
 		else
 		{
 			b_input_correct = false;
-			s_error_msg = "Buffer size must be positive integer";
+			s_error_msg = sBUFFER_SIZE_ERROR;
 		}
 	}
 	else
 	{
 		b_input_correct = false;
-		s_error_msg = "Buffer size must be positive integer";
+		s_error_msg = sBUFFER_SIZE_ERROR;
+	}
+}
+
+void CInterface::v_process_producer_input(string const & sSubStr)
+{
+	v_single_arg(sSubStr);
+	b_input_correct = true;
+	if(bIsInteger(ps_input_to_parse[0]) && stoi(ps_input_to_parse[0]) > 0)
+	{
+		vs_command_set.push_back(ps_input_to_parse[0]);
+		v_single_arg(ps_input_to_parse[1]);
+		if(bIsInteger(ps_input_to_parse[0]) && stoi(ps_input_to_parse[0]) > 0)
+		{
+			vs_command_set.push_back(ps_input_to_parse[0]);
+		}
+		else
+		{
+			b_input_correct = false;
+			s_error_msg = sPRODUCING_CYCLES_VALUE_ERROR;
+		}
+	}
+	else
+	{
+		b_input_correct = false;
+		s_error_msg = sPRODUCING_TIME_VALUE_ERROR;
+	}
+}
+
+void CInterface::v_process_consumer_input(const string& sSubStr)
+{
+	v_single_arg(sSubStr);
+	b_input_correct = true;
+	if (bIsInteger(ps_input_to_parse[0]) && stoi(ps_input_to_parse[0]) > 0)
+	{
+		vs_command_set.push_back(ps_input_to_parse[0]);
+		v_single_arg(ps_input_to_parse[1]);
+		if (bIsInteger(ps_input_to_parse[0]) && stoi(ps_input_to_parse[0]) > 0)
+		{
+			vs_command_set.push_back(ps_input_to_parse[0]);
+			v_single_arg(ps_input_to_parse[1]);
+			if (bIsInteger(ps_input_to_parse[0]) && stoi(ps_input_to_parse[0]) > 0)
+			{
+				vs_command_set.push_back(ps_input_to_parse[0]);
+
+			}
+			else
+			{
+				b_input_correct = false;
+				s_error_msg = sELEMENTS_CONSUMED_PER_CYCLE_ERROR;
+			}
+		}
+		else
+		{
+			b_input_correct = false;
+			s_error_msg = sCONSUMING_CYCLES_VALUE_ERROR;
+		}
+	}
+	else
+	{
+		b_input_correct = false;
+		s_error_msg = sCONSUMING_TIME_VALUE_ERROR;
+	}
+}
+
+void CInterface::v_match_err_code(CProdConsError errCode)
+{
+	switch(errCode)
+	{
+		case CProdConsError::ERR_OK:
+			s_error_msg = sPROD_CONS_ERR_OK_MSG;
+			break;
+		case CProdConsError::ERR_NO_CONSUMER:
+			s_error_msg = sPROD_CONS_ERR_NO_CONSUMER_MSG;
+			break;
+		case CProdConsError::ERR_NO_PRODUCER:
+			s_error_msg = sPROD_CONS_ERR_NO_PRODUCER_MSG;
+			break;
+		case CProdConsError::ERR_NO_BUFFER:
+			s_error_msg = sPROD_CONS_ERR_NO_BUFFER_MSG;
+			break;
 	}
 }
 
@@ -211,4 +312,9 @@ bool bIsInteger(const string& sToCheck)
 	if ((sToCheck[0] == 45 && i_str_length == 1) || sToCheck[0] == '\0')
 		b_is_number = false;
 	return b_is_number;
+}
+
+void CInterface::v_print_msg(const string& sMsg)
+{
+	cout << sMsg << endl;
 }

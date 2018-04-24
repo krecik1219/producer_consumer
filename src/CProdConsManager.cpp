@@ -37,6 +37,8 @@ void CProdConsManager::vCreateConsumer(int iConsumeInterval, int iRepetitions, i
 
 CProdConsError CProdConsManager::vStartTest()
 {
+	if(!pc_buffer)
+		return CProdConsError::ERR_NO_BUFFER;
 	if(v_consumers.empty())
 		return CProdConsError::ERR_NO_CONSUMER;
 
@@ -45,7 +47,7 @@ CProdConsError CProdConsManager::vStartTest()
 
 	int i_producers_size = v_producers.size();
 	int i_consumers_size = v_consumers.size();
-
+	pc_buffer->vClearBuffer();
 	for(int i=0; i<i_producers_size; ++i)
 	{
 		v_producers[i]->vProduce();
@@ -77,6 +79,7 @@ void CProdConsManager::vRunSampleTest()
 	vCreateConsumer(3500, 10, 3);
 
 	vStartTest();
+	vResetManager();
 }
 
 void CProdConsManager::vResetManager()

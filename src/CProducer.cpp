@@ -1,10 +1,9 @@
 #include "CProducer.h"
 
 CProducer::CProducer(int iNumber, CBuffer * const cBuffer, int iProducingTime, int iRepetitions) :
-i_number(iNumber), c_buffer(cBuffer), b_is_producing(false),
-i_producing_time(iProducingTime), i_repetitions(iRepetitions)
+i_number(iNumber), pc_buffer(cBuffer), i_producing_time(iProducingTime),
+i_repetitions(iRepetitions), b_is_producing(false)
 {
-
 }
 
 CProducer::~CProducer()
@@ -30,10 +29,11 @@ void CProducer::v_aux_produce()
 		out<<"Producer " + std::to_string(i_number)+" is sleeping for "+std::to_string(i_producing_time);
 		std::this_thread::sleep_for(std::chrono::milliseconds(i_producing_time));
 		out<<"Producer "+std::to_string(i_number)+" is putting elem ";
-		c_buffer->vPut(i);  // putting loop var to buffer, can by any number
+		pc_buffer->vPut(i);  // putting loop var to buffer, can by any number
 		out<<"Producer "+std::to_string(i_number)+" produced element ";
 	}
 	out<<"Producer "+std::to_string(i_number)+" finished its job ";
+	b_is_producing = false;
 }
 
 void CProducer::vExplicitJoin()
@@ -41,5 +41,4 @@ void CProducer::vExplicitJoin()
 	if(c_producer_thread.joinable())
 		c_producer_thread.join();
 }
-
 

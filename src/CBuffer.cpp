@@ -33,14 +33,14 @@ void CBuffer::vTake(int iQuantity)
 	{
 		std::unique_lock<std::mutex> lock (c_locker);
 
-			c_consumer_empty.wait(lock, [this, iQuantity]()->bool{return i_count >= iQuantity;});
+		c_consumer_empty.wait(lock, [this, iQuantity]()->bool{return i_count >= iQuantity;});
 
-			i_output_position = (i_output_position + iQuantity) % i_buffer_size;
-			i_count-=iQuantity;
+		i_output_position = (i_output_position + iQuantity) % i_buffer_size;
+		i_count -= iQuantity;
 
-			lock.unlock();
+		lock.unlock();
 
-			c_producer_full.notify_one();
+		c_producer_full.notify_one();
 	}
 }
 
@@ -49,4 +49,14 @@ int CBuffer::iCurrentCount()
 	return i_count;
 }
 
+void CBuffer::vClearBuffer()
+{
+	i_count = 0;
+	i_input_position = 0;
+	i_output_position = 0;
+}
 
+int CBuffer::iGetSize()
+{
+	return i_buffer_size;
+}

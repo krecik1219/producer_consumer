@@ -9,10 +9,11 @@ class CProducer
 {
 public:
 	CProducer(int iNumber, CBuffer * const cBuffer, int iProducingTime, int iRepetitions);
-	~CProducer();
+	CProducer(CProducer const & cOther) = delete;  // copy construction may not be deterministic and lead to errors
+	CProducer & operator=(CProducer const & cOther) = delete;  // copy-assignment may be dangerous while producer is producing
+	// move constructor is pointless, move operator= is dangerous as the copy operator=, these functions won't be generated
 
-	CProducer(CProducer const & cOther) = delete;
-	CProducer & operator=(CProducer const & cOther) = delete;
+	~CProducer();
 
 	void vProduce();
 	void vExplicitJoin();
@@ -22,7 +23,7 @@ private:
 	void v_aux_produce();
 
 	int i_number;
-	CBuffer * const c_buffer;
+	CBuffer * const pc_buffer;
 	int i_producing_time;
 	int i_repetitions;
 	bool b_is_producing;

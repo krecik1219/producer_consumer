@@ -5,9 +5,16 @@
 #include "CBuffer.h"
 #include "CProducer.h"
 #include "CConsumer.h"
+#include "CProdConsManager.h"
 #include <vector>
 
 using namespace std;
+
+TEST(BufferTest, buffer_size_is_correct)
+{
+	CBuffer buffer(5);
+	ASSERT_EQ(5, buffer.iGetSize());
+}
 
 TEST(BufferTest, putting_to_buffer_test)
 {
@@ -38,6 +45,22 @@ TEST(BufferTest, consuming_from_buffer_test)
 	ASSERT_EQ(0, buffer.iCurrentCount());
 }
 
+TEST(BufferTest, clearing_buffer_test)
+{
+	CBuffer buffer(5);
+	buffer.vPut(1);
+	buffer.vPut(1);
+	buffer.vPut(1);
+	ASSERT_EQ(3, buffer.iCurrentCount());
+	buffer.vClearBuffer();
+	ASSERT_EQ(0, buffer.iCurrentCount());
+	buffer.vPut(1);
+	buffer.vPut(1);
+	ASSERT_EQ(2, buffer.iCurrentCount());
+	buffer.vTake(2);
+	ASSERT_EQ(0, buffer.iCurrentCount());
+}
+
 TEST(BufferTest, trying_consume_more_than_buffer_size)
 {
 	CBuffer buffer(5);
@@ -46,6 +69,45 @@ TEST(BufferTest, trying_consume_more_than_buffer_size)
 	ASSERT_EQ(2, buffer.iCurrentCount());
 	buffer.vTake(6);
 	ASSERT_EQ(2, buffer.iCurrentCount());
+}
+
+TEST(ProducerConsumerTest, one_producer_one_consumer_single_elem_buffer)
+{
+	CBuffer buffer(1);
+	CProducer producer(1, &buffer, 300, 1);
+	CConsumer consumer(1, &buffer, 200, 1, 1);
+	producer.vProduce();
+	consumer.vConsume();
+	producer.vExplicitJoin();
+	consumer.vExplicitJoin();
+	ASSERT_EQ(0, buffer.iCurrentCount());
+}
+
+TEST(ProducerConsumerTest, one_producer_one_consumer_single_elem_buffer_many_cycles)
+{
+	CBuffer buffer(1);
+	CProducer producer(1, &buffer, 300, 10);
+	CConsumer consumer(1, &buffer, 200, 10, 1);
+	producer.vProduce();
+	consumer.vConsume();
+	producer.vExplicitJoin();
+	consumer.vExplicitJoin();
+	ASSERT_EQ(0, buffer.iCurrentCount());
+}
+
+TEST(ProducerConsumerTest, one_producer_one_consumer_many_elem_buffer_additional_producer_filling_sparse_space)
+{
+	CBuffer buffer(10);
+	CProducer producer1(1, &buffer, 300, 6);
+	CProducer producer2(1, &buffer, 300, 4);
+	CConsumer consumer(1, &buffer, 200, 2, 3);
+	producer1.vProduce();
+	producer2.vProduce();
+	consumer.vConsume();
+	producer1.vExplicitJoin();
+	producer2.vExplicitJoin();
+	consumer.vExplicitJoin();
+	ASSERT_EQ(4, buffer.iCurrentCount());
 }
 
 TEST(ProducerConsumerTest, producing_some_quantity_of_elems_then_consuming_the_same_quantity)
@@ -341,6 +403,54 @@ TEST_F(ProdConsTest, many_producers_many_consumer_larger_scale_small_buffer)
 	ASSERT_EQ(0, buffer->iCurrentCount());
 }
 
+TEST(ProdConsManagerTest, buffer_missing_error_expected)
+{
+	CProdConsManager manager;
+	manager.vCreateProducer(400, 10);
+	manager.vCreateConsumer(400, 10, 1);
+	CProdConsError err_code = manager.vStartTest();
+	ASSERT_EQ(CProdConsError::ERR_NO_BUFFER, err_code);
+}
 
+TEST(ProdConsManagerTest, try_of_creating_more_than_one_buffer_returns_false)
+{
+	CProdConsManager manager;
+	bool result = manager.bCreateBuffer(5);
+	ASSERT_EQ(true, result);
+	result = manager.bCreateBuffer(3);
+	ASSERT_EQ(false, result);
+}
+
+TEST(ProdConsManagerTest, producer_missing_error_expected)
+{
+	CProdConsManager manager;
+	manager.bCreateBuffer(5);
+	manager.vCreateConsumer(400, 10, 1);
+	CProdConsError err_code = manager.vStartTest();
+	ASSERT_EQ(CProdConsError::ERR_NO_PRODUCER, err_code);
+}
+
+TEST(ProdConsManagerTest, consumer_missing_error_expected)
+{
+	CProdConsManager manager;
+	manager.bCreateBuffer(5);
+	manager.vCreateProducer(400, 10);
+	CProdConsError err_code = manager.vStartTest();
+	ASSERT_EQ(CProdConsError::ERR_NO_CONSUMER, err_code);
+}
+
+TEST(ProdConsManagerTest, started_successfully)
+{
+	CProdConsManager manager;
+	manager.bCreateBuffer(5);
+	manager.vCreateProducer(400, 10);
+	manager.vCreateProducer(500, 20);
+	manager.vCreateProducer(350, 30);
+	manager.vCreateConsumer(400, 2, 5);
+	manager.vCreateConsumer(100, 10, 2);
+	manager.vCreateConsumer(300, 10, 3);
+	CProdConsError err_code = manager.vStartTest();
+	ASSERT_EQ(CProdConsError::ERR_OK, err_code);
+}
 
 #endif /* PRODUCERCONSUMERTEST_H_ */
