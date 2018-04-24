@@ -15,3 +15,6 @@
 !/Test/src/*.mk
 !/Test/test/*.mk
 !/Test/contrib/gtest/*.mk
+/Debug/
+/Release/
+/Test/
