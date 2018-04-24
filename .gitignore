@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-/Default/
-/Debug/
-/Release/
-/Test/
-=======
 /Debug/*
 /Release/*
 /Test/*
@@ -21,4 +15,3 @@
 !/Test/src/*.mk
 !/Test/test/*.mk
 !/Test/contrib/gtest/*.mk
->>>>>>> refs/heads/restructure_project_branch

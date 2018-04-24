@@ -225,10 +225,7 @@
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
-<<<<<<< HEAD
-=======
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
->>>>>>> refs/heads/restructure_project_branch
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.336866570;cdt.managedbuild.config.gnu.cross.exe.debug.336866570.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.996091437;cdt.managedbuild.tool.gnu.cpp.compiler.input.590055378">
