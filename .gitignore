@@ -1,4 +1,24 @@
+<<<<<<< HEAD
 /Default/
 /Debug/
 /Release/
 /Test/
+=======
+/Debug/*
+/Release/*
+/Test/*
+
+!/Debug/makefile
+!/Debug/*.mk
+!/Debug/src/*.mk
+
+!/Release/makefile
+!/Release/*.mk
+!/Release/src/*.mk
+
+!/Test/makefile
+!/Test/*.mk
+!/Test/src/*.mk
+!/Test/test/*.mk
+!/Test/contrib/gtest/*.mk
+>>>>>>> refs/heads/restructure_project_branch

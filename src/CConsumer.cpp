@@ -1,14 +1,45 @@
 #include "CConsumer.h"
 
-CConsumer::CConsumer(CBufor const & cBufor) :
-c_bufor(&cBufor)
+CConsumer::CConsumer(int iNumber, CBuffer * const cBuffer, int iConsumeInterval, int iRepetitions, int iElementsPerConsume) :
+i_number(iNumber), pc_buffer(cBuffer), i_consume_interval(iConsumeInterval),
+i_repetitions(iRepetitions), i_elements_per_consume(iElementsPerConsume), b_is_consuming(false)
 {
 
+}
+
+CConsumer::~CConsumer()
+{
+	if(c_consumer_thread.joinable())
+		c_consumer_thread.join();
 }
 
 void CConsumer::vConsume()
 {
-	// TODO producing, thread
+	if(!b_is_consuming)
+	{
+		b_is_consuming = true;
+		c_consumer_thread = std::thread(&CConsumer::v_aux_consume, this);
+	}
 }
 
+void CConsumer::v_aux_consume()
+{
+	CSynchConsoleOut& out = CSynchConsoleOut::pcGetInstance();
 
+	for(int i = 0; i < i_repetitions; ++i)
+	{
+		out<<("Consumer "+std::to_string(i_number)+" is sleeping for "+std::to_string(i_consume_interval));
+		std::this_thread::sleep_for(std::chrono::milliseconds(i_consume_interval));
+		out<<"Consumer "+std::to_string(i_number)+" is consuming "+std::to_string(i_elements_per_consume)+" elements";
+		pc_buffer->vTake(i_elements_per_consume);
+		out<<"Consumer "+std::to_string(i_number)+" consumed "+std::to_string(i_elements_per_consume)+" elements";
+	}
+	out<<"Consumer "+std::to_string(i_number)+" finished its job ";
+	b_is_consuming = false;
+}
+
+void CConsumer::vExplicitJoin()
+{
+	if(c_consumer_thread.joinable())
+		c_consumer_thread.join();
+}

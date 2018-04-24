@@ -1,16 +1,44 @@
 #include "CProducer.h"
 
-CProducer::CProducer(CBufor const & cBufor) :
-c_bufor(&cBufor)
+CProducer::CProducer(int iNumber, CBuffer * const cBuffer, int iProducingTime, int iRepetitions) :
+i_number(iNumber), pc_buffer(cBuffer), i_producing_time(iProducingTime),
+i_repetitions(iRepetitions), b_is_producing(false)
 {
+}
 
+CProducer::~CProducer()
+{
+	if(c_producer_thread.joinable())
+		c_producer_thread.join();
 }
 
 void CProducer::vProduce()
 {
-	// TODO producing, thread
+	if(!b_is_producing)
+	{
+		b_is_producing = true;
+		c_producer_thread = std::thread(&CProducer::v_aux_produce, this);
+	}
 }
 
+void CProducer::v_aux_produce()
+{
+	CSynchConsoleOut & out = CSynchConsoleOut::pcGetInstance();
+	for(int i = 0; i < i_repetitions; ++i)
+	{
+		out<<"Producer " + std::to_string(i_number)+" is sleeping for "+std::to_string(i_producing_time);
+		std::this_thread::sleep_for(std::chrono::milliseconds(i_producing_time));
+		out<<"Producer "+std::to_string(i_number)+" is putting elem ";
+		pc_buffer->vPut(i);  // putting loop var to buffer, can by any number
+		out<<"Producer "+std::to_string(i_number)+" produced element ";
+	}
+	out<<"Producer "+std::to_string(i_number)+" finished its job ";
+	b_is_producing = false;
+}
 
-
+void CProducer::vExplicitJoin()
+{
+	if(c_producer_thread.joinable())
+		c_producer_thread.join();
+}
 
