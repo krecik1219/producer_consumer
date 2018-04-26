@@ -14,8 +14,8 @@ class CProdConsManager
 {
 public:
 	CProdConsManager();
-	CProdConsManager(CProdConsManager const & cOther);  // copy construction is nonsense because of not copy-able member vars
-	CProdConsManager & operator=(CProdConsManager const & cOther);  // copy assignment is nonsense because of not copy-able member vars
+	CProdConsManager(CProdConsManager const & cOther) = delete;  // copy construction is nonsense because of not copy-able member vars
+	CProdConsManager & operator=(CProdConsManager const & cOther) = delete;  // copy assignment is nonsense because of not copy-able member vars
 	~CProdConsManager();
 
 	bool bCreateBuffer(int iBufferSize);
