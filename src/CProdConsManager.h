@@ -10,7 +10,7 @@ using namespace std;
 
 enum class CProdConsError;
 
-class CProdConsManager final
+class CProdConsManager
 {
 public:
 	CProdConsManager();

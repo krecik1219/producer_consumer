@@ -4,7 +4,7 @@
 #include <mutex>
 #include <iostream>
 
-class CSynchConsoleOut
+class CSynchConsoleOut final
 {
 public:
 
